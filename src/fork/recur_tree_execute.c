@@ -6,26 +6,34 @@
 /*   By: subpark <subpark@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/30 20:53:44 by subpark           #+#    #+#             */
-/*   Updated: 2024/01/05 13:36:59 by subpark          ###   ########.fr       */
+/*   Updated: 2024/01/09 19:40:38 by subpark          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../../include/minishell.h"
 
-void	execute_simple_cmd(t_cmd *cmd, t_stdio *stdios, char **envp)
+void	red_error_handle(t_cmd *type)
+{
+	if (type->cmdstr[0][0] == '<' || type->cmdstr[0][0] =='>')
+	{
+		g_exit_status = 0;
+		exit (g_exit_status);
+	}
+	else
+		return ;
+}
+
+void	execute_simple_cmd(t_cmd *cmd, t_stdio **stdios, char **envp, t_envp *env)
 {
 	static int		pipefd[2] = {-1, -1};
 	static int		new_pipe[2];
 	int				old_pipe[2];
-	int				builtin;
 	pid_t			pid;
 
-	if (pipefd[0] != -1) ///for excepting the case of first time
+	if (pipefd[0] != -1) //for excepting the case of first time
 	{
 		old_pipe[0] = dup(new_pipe[0]);
-		old_pipe[1] = dup(new_pipe[1]);
 		close(new_pipe[0]);
-		close(new_pipe[1]);
 	}
 	if (pipe(new_pipe) == -1)
 		return (perror("Pipe: "));//exit with signals
@@ -35,33 +43,34 @@ void	execute_simple_cmd(t_cmd *cmd, t_stdio *stdios, char **envp)
 	else if (pid == 0)
 	{
 		update_pipefd(&pipefd, cmd->pipe_exist, old_pipe, new_pipe);
-		update_redirfd(pipefd, stdios);
-		builtin = check_builtin(cmd->left_child);
-		if (builtin)
+		update_redirfd(pipefd, *stdios);
+		if (check_builtin(cmd->left_child))
 		{
-			builtin_action(cmd->right_child, cmd->right_child->cmdstr);
+			builtin_action(cmd->right_child, cmd->right_child->cmdstr, env);
+			//if builtin action return 0 meanin successful, if that case, g_exit status become 0
+			//so have to modificate builtin action function to return int.
 			exit(errno);
 		}
 		else
 		{
+			red_error_handle(cmd->left_child);
 	 		print_error_cmd(cmd->left_child, envp);
 			exec(cmd->right_child->cmdstr, envp);
 		}
 	}
-	if (pipefd[0] != -1)
+	else
 	{
-		close(old_pipe[0]);
-		close(old_pipe[1]);
+		if (!ft_strcmp(cmd->right_child->cmdstr[0], "unset"))
+			ft_unset(cmd->right_child->cmdstr, env);
+		if (!ft_strcmp(cmd->right_child->cmdstr[0], "export"))
+			export(cmd->right_child->cmdstr + 1, env);
+		if (!ft_strcmp(cmd->right_child->cmdstr[0], "cd"))
+			change_directory(cmd->right_child->cmdstr);
+		write_pipefd(&pipefd, cmd->pipe_exist, old_pipe, new_pipe);
+		waitpid(-1, &g_exit_status, WNOHANG);
+		free_stdios(*stdios);
+		*stdios = NULL;
 	}
-	// if (cmd->pipe_exist == -1)
-	// {
-	// 	close(new_pipe[0]);
-	// 	close(new_pipe[1]);
-	// }
-	waitpid(pid, NULL, WUNTRACED);//might be in main function before generating prompt
-	write_pipefd(&pipefd, cmd->pipe_exist, old_pipe, new_pipe);
-	free_stdios(stdios);
-	stdios = NULL;
 }
 
 void	execute_simple_redirect(t_cmd *node, t_stdio **stdios)
@@ -89,29 +98,29 @@ void	execute_simple_redirect(t_cmd *node, t_stdio **stdios)
 	}
 }
 
-void	execute_tree(t_cmd *node, t_stdio **stdios, char **envp)
+void	execute_tree(t_cmd *node, t_stdio **stdios, char **envp, t_envp *envs)
 {
 	if (node->node_type == NODE_CMD || node->node_type == NODE_REDIRECTS)
 		return ;
 	else if (node->node_type == NODE_PIPE)
 		;
 	else if (node->node_type == NODE_SIMPLE_CMD)
-		execute_simple_cmd(node, *stdios, envp);
+		execute_simple_cmd(node, stdios, envp, envs);
 	else if (node->node_type == NODE_SIMPLE_REDIRECT)
 		execute_simple_redirect(node, stdios);
 }
 
-void	search_tree(t_cmd *node, char **envp)
+void	search_tree(t_cmd *node, char **envp, t_envp *env)
 {
 	static t_stdio	*stdios;
 
 	if (node == NULL)
 		return ;
-	execute_tree(node, &stdios, envp);
+	execute_tree(node, &stdios, envp, env);
 	if (node->left_child && (node->left_child->node_type != NODE_RED_TYPE ||
 		node->left_child->node_type != NODE_FILE_PATH))
-		search_tree(node->left_child, envp);
+		search_tree(node->left_child, envp, env);
 	if (node->right_child && (node->right_child->node_type != NODE_FILE_NAME ||
 		node->right_child->node_type != NODE_ARGV))
-		search_tree(node->right_child, envp);
+		search_tree(node->right_child, envp, env);
 }
