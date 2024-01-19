@@ -6,7 +6,7 @@
 /*   By: subpark <subpark@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/02 15:48:47 by subpark           #+#    #+#             */
-/*   Updated: 2024/01/03 16:39:01 by subpark          ###   ########.fr       */
+/*   Updated: 2024/01/12 16:31:49 by subpark          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -48,12 +48,4 @@ void	set_signals_interactive(void)
 	sigaction(SIGINT, &act, NULL);
 }
 
-// void	set_signals_noninteractive(void)
-// {
-// 	struct sigaction	act;
-
-// 	ft_bzero(&act, sizeof(act));
-// 	act.sa_handler = &signal_print_newline;
-// 	sigaction(SIGINT, &act, NULL);
-// 	sigaction(SIGQUIT, &act, NULL);
-// }
+// void	hered

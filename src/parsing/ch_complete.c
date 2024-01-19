@@ -1,235 +1,131 @@
-#include <stdio.h>
-#include <stdbool.h>
-#include <unistd.h>
-#include <readline/readline.h>
-#include <readline/history.h>
-#include <stdlib.h>
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   ch_complete.c                                      :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: ftemori <ftemori@student.42berlin.de>      +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2024/01/15 12:19:54 by ftemori           #+#    #+#             */
+/*   Updated: 2024/01/15 12:19:56 by ftemori          ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
 
-typedef struct	s_data
-{
-	int	word_count;
-	int	sqn;
-	int	dqn;
-	char	**array;
-	char	*tmp;
-}	t_data;
+#include "../../include/minishell.h"
 
-int	quo_num(char *tmp, t_data *data)
+/*int	word_counter(const char *str)
 {
-	int	i = 0, s = 0, d = 0;
-	while (tmp[i])
+	int	count;
+	int	in_word;
+	int	in_quotes;
+
+	count = 0;
+	in_word = 0;
+	in_quotes = 0;
+	while (*str)
 	{
-		if (tmp[i] == '\'')
-			s++;
-		if (tmp[i] == '\"')
-			d++;
-		i++;
+		ft_word_itter(str, &in_quotes, &in_word, &count);
+		str++;
 	}
-	if ((s % 2 == 0 || s == 0) && (d % 2 == 0 || d == 0))
+	return (count);
+}*/
+
+int	var_finder(char **env, char *s)
+{
+	int	i;
+
+	i = 0;
+	while (env[i] != NULL)
 	{
-		data->sqn = s;
-		data->dqn = d;
-		return (s);
+		if (f_strcmp(env[i], s) != -1)
+			return (i); 
+		i++;
 	}
 	return (-1);
 }
 
-int	quo_arrangement(char *str)
+char	*str_modifier(char *str, char *var, int d)
 {
-	int	i = 0, k = 0;
-	char	*sstr = malloc(strlen(str) * sizeof(char));
-	while (str[i])
-	{
-		if (str[i] == '\'' && str[i + 1] != '\'')
-		{
-			sstr[k] = str[i];
-			k++;
-			i++;
-		}
-		else if (str[i] == '\"' && str[i + 1] != '\"')
-		{
-			sstr[k] = str[i];
-			i++;
-			k++;
-		}
-		else
-			i += 2;
-	}
-	sstr[k] = '\0';
-	if (strlen(sstr) > 3 && sstr[0] == sstr[2] && sstr[0] != '\0')
-	{
-		free(sstr);
-		return (-1);
-	}
-	if (sstr[0] != '\0')
-		if (quo_arrangement(sstr) == -1)
-		{
-			free(sstr);
-			return (-1);
-		}
-	free(sstr);
-	return (0);
-}
+	int		eq;
+	int		i;
+	char	*tmp;
 
-int	quo_order(char *tmp, t_data *data)
-{
-	int	i = 0, k = 0;
-	char	*q_string;
-	q_string = malloc((data->sqn + data->dqn + 1) * sizeof(char));
-	while (tmp[i])
-	{
-		if (tmp[i] == '\'')
-		{
-			q_string[k] = '\'';
-			k++;
-		}
-		if (tmp[i] == '\"')
-		{
-			q_string[k] = '\"';
-			k++;
-		}
-		i++;
-	}
-	q_string[k] = '\0';
-	if (quo_arrangement(q_string) == -1)
-	{
-		free(q_string);
-		return (-1);
-	}
-	free(q_string);
-	return (0);
-}
-
-int	ft_strcpy(t_data *data, char *tmp, int len, int k)
-{
-	int	i = 0;
-	data->array[k] = malloc((len + 1) * sizeof(char));
-	if (!data->array[k])
-		return (-1);
-	while (i < len)
-	{
-		data->array[k][i] = tmp[i];
-		i++;
-	}
-	data->array[k][i] = '\0';
-	return (0);
-}
-
-int	ft_chopper(t_data *data, char *tmp, int k)
-{
-	int	i = 0, m = 0;
-	if (tmp[0] == '\0')
-		return (-1);
-	while (tmp[i] == ' ')
-		i++;
-	if (tmp[i] == '\0')
-	{
-		data->array[k] = NULL;
-		return (0);
-	}
-	tmp = tmp + i;
 	i = 0;
-	while (tmp[i] != '\0' && tmp[i] != ' ' && tmp[i] != '=' && tmp[i] != '\"' && tmp[i] != '\'' && tmp[i] != '<' && tmp[i] != '>' && tmp[i] != '|')
-		i++;
-	if (tmp[0] == '\'')
+	eq = f_strchr(var, '=') + 1;
+	tmp = malloc((f_strlen(var + eq) + d + 1) * sizeof(char));
+	while (i < d)
 	{
-		i++;
-		m = i;
-		while (tmp[i] != '\'' && tmp[i] != '\0')
-			i++;
-		ft_strcpy(data, tmp + m, i - 1, k);
-		i++;
-		tmp = tmp + i;
-		i = 0;
-	}
-	else if (tmp[0] == '\"')
-	{
-		i++;
-		m = i;
-		while (tmp[i] != '\"' && tmp[i] != '\0')
-			i++;
-		ft_strcpy(data, tmp + m, i - 1, k);
-		i++;
-		tmp = tmp + i;
-		i = 0;
-	}
-	else if (tmp[0] != '=' && tmp[0] != '\0' && tmp[0] != '<' && tmp[0] != '>' && tmp[0] != '|')
-		ft_strcpy(data, tmp, i, k);
-	else if ((tmp[0] == '>' && tmp[1] == '>') || (tmp[0] == '<' && tmp[1] == '<'))
-	{
-		ft_strcpy(data, tmp, 2, k);
-		i += 2;
-	}
-	else if (tmp[0] == '=' || tmp[0] == '<' || tmp[0] == '>' || tmp[0]  == '|')
-	{
-		ft_strcpy(data, tmp, 1, k);
+		tmp[i] = str[i];
 		i++;
 	}
-	k++;
-	if (ft_chopper(data, tmp + i, k) == -1 || tmp[i] == '\0')
-		data->array[k] = NULL;
+	while (var[eq] != '\0')
+	{
+		tmp[i] = var[eq];
+		i++;
+		eq++;
+	}
+	tmp[i] = '\0';
+	free(str);
+	return (tmp);
+}
+
+int	expansion(t_data *data, char **env)
+{
+	int	i;
+	int	d;
+	int	v;
+
+	i = 0;
+	while (data->array[i] != NULL)
+	{
+		d = f_strchr(data->array[i], '$');
+		if (d != -1 && (f_strchr(data->array[i], '\'') == -1))
+		{
+			v = var_finder(env, data->array[i] + d + 1);
+			if (v == -1)
+				return (-1);
+			data->array[i] = str_modifier(data->array[i], env[v], d);
+			if (data->array[i] == NULL)
+				return (-1);
+		}
+		i++;
+	}
 	return (0);
 }
 
-int	word_counter(const char* str) {
-	int count = 0;
-	bool inWord = false;
-	bool inQuotes = false;
-
-	while (*str) {
-		if (*str == ' ' && !inQuotes) {
-			inWord = false;
-		} else if (*str == '=' || *str == '<' || *str == '>' || *str == '|' || *str == ',') {
-			count++;
-			inWord = false;
-		} else if (*str == '"' || *str == '\'') {
-			if (inQuotes) {
-				count++;
-				inWord = false;
-				inQuotes = false;
-			} else {
-				inQuotes = true;
-				inWord = true;
-			}
-		} else {
-			if (!inWord) {
-				count++;
-				inWord = true;
-			}
-		}
-
-		str++;
-	}
-
-	return count;
-}
-
-char	**input_validation(char *tmp)
+char	**input_validation(char *tmp, char **env)
 {
-	t_data	data;
-	data.tmp = tmp;
-	if (quo_num(tmp, &data) == -1)
-		return (NULL);
-	data.word_count = word_counter(data.tmp);
-	if (data.word_count == 0)
-		return (NULL);
-	if (data.sqn + data.dqn > 0)
-		if (quo_order(tmp, &data) == -1)
-			return (NULL);
-	data.array = malloc((data.word_count + 1) * sizeof(char *));
-	if (ft_chopper(&data, tmp, 0) == -1)
-		return (NULL);
-	return (data.array);
-}
+	t_data	*data;
+	char	**arr;
 
-/*int	main(void)
+	data = malloc(sizeof(t_data));
+	//arr = (char**)malloc(sizeof(char*));
+	if (quo_num(tmp, data) == -1)
+		return (NULL);
+	data->word_count = word_counter(tmp);
+	if (data->word_count == 0)
+		return (NULL);
+	if (data->sqn + data->dqn > 0)
+		if (quo_order(tmp, data) == -1)
+			return (NULL);
+	data->array = (char **)malloc((data->word_count + 4) * sizeof(char *));
+	if (ft_chopper(data, tmp, 0) == -1)
+		return (NULL);
+	if (expansion(data, env) == -1)
+		return (NULL);
+	arr = data->array;
+	free(data);
+	return (arr);
+}
+/*
+int	main(int ac, char **av, char **env)
 {
 	int	i = 0;
 	char	*tmp;
 	char	**array;
+	if (ac && av)
 	read_history("history_file");
 	tmp = readline("promp> ");
-	if ((array = input_validation(tmp)) == NULL)
+	if ((array = input_validation(tmp, env)) == NULL)
 	{
 		printf("wrong input you goofy");
 		return (0);
@@ -242,4 +138,4 @@ char	**input_validation(char *tmp)
 	}
 	free(array);
 	return (0);
-}*/
+}*/					// finally fixed, but should do one last test!!!

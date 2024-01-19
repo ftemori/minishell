@@ -1,44 +1,34 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   env.c                                              :+:      :+:    :+:   */
+/*   argv_modification.c                                :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ftemori <ftemori@student.42berlin.de>      +#+  +:+       +#+        */
+/*   By: siun <siun@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/01/15 12:10:16 by ftemori           #+#    #+#             */
-/*   Updated: 2024/01/15 12:10:18 by ftemori          ###   ########.fr       */
+/*   Created: 2024/01/14 05:53:16 by siun              #+#    #+#             */
+/*   Updated: 2024/01/14 06:10:34 by siun             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../../include/minishell.h"
 
-int	f_strlen(char *s)
+void	replace_exit_status(char ***argv)
 {
 	int	i;
+	char *tmp;
 
+	if ((*argv) == NULL || (**argv) == NULL)
+		return ;
 	i = 0;
-	while (s[i])
-		i++;
-	return (i);
-}
-
-int	ft_putstr(char *s)
-{
-	write(1, s, f_strlen(s));
-	write(1, "\n", 1);
-	return (0);
-}
-
-void	ft_env(t_envp *env)
-{
-	int	i;
-
-	i = 0;
-	while (env->envp[i] != NULL)
+	while ((*argv)[i])
 	{
-		if (ft_putstr(env->envp[i]) == -1)
-			return ;
-		i++;
+		if (!ft_strcmp((*argv)[i], "$?"))
+		{
+			free((*argv)[i]);
+			tmp = ft_itoa(g_exit_status);
+			(*argv)[i] = ft_strdup(tmp);
+			free(tmp);
+		}
+		i ++;
 	}
-	return ;
 }

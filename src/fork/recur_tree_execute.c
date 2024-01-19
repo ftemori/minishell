@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   recur_tree_execute.c                               :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: subpark <subpark@student.42.fr>            +#+  +:+       +#+        */
+/*   By: siun <siun@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/30 20:53:44 by subpark           #+#    #+#             */
-/*   Updated: 2024/01/09 19:40:38 by subpark          ###   ########.fr       */
+/*   Updated: 2024/01/14 06:29:49 by siun             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,8 +42,8 @@ void	execute_simple_cmd(t_cmd *cmd, t_stdio **stdios, char **envp, t_envp *env)
 		return (perror("Fork: "));
 	else if (pid == 0)
 	{
-		update_pipefd(&pipefd, cmd->pipe_exist, old_pipe, new_pipe);
 		update_redirfd(pipefd, *stdios);
+		update_pipefd(&pipefd, cmd->pipe_exist, old_pipe, new_pipe);
 		if (check_builtin(cmd->left_child))
 		{
 			builtin_action(cmd->right_child, cmd->right_child->cmdstr, env);
@@ -60,11 +60,13 @@ void	execute_simple_cmd(t_cmd *cmd, t_stdio **stdios, char **envp, t_envp *env)
 	}
 	else
 	{
-		if (!ft_strcmp(cmd->right_child->cmdstr[0], "unset"))
-			ft_unset(cmd->right_child->cmdstr, env);
-		if (!ft_strcmp(cmd->right_child->cmdstr[0], "export"))
+		if (!ft_strcmp(cmd->right_child->cmdstr[0], "exit"))
+			exit_command();
+		else if (!ft_strcmp(cmd->right_child->cmdstr[0], "unset"))
+			ft_unset(cmd->right_child->cmdstr[1], env);
+		else if (!ft_strcmp(cmd->right_child->cmdstr[0], "export"))
 			export(cmd->right_child->cmdstr + 1, env);
-		if (!ft_strcmp(cmd->right_child->cmdstr[0], "cd"))
+		else if (!ft_strcmp(cmd->right_child->cmdstr[0], "cd"))
 			change_directory(cmd->right_child->cmdstr);
 		write_pipefd(&pipefd, cmd->pipe_exist, old_pipe, new_pipe);
 		waitpid(-1, &g_exit_status, WNOHANG);
