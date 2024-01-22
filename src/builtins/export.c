@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   export.c                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ftemori <ftemori@student.42berlin.de>      +#+  +:+       +#+        */
+/*   By: ubuntu <ubuntu@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/15 12:12:04 by ftemori           #+#    #+#             */
-/*   Updated: 2024/01/15 12:12:06 by ftemori          ###   ########.fr       */
+/*   Updated: 2024/01/20 22:53:41 by ubuntu           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -47,11 +47,21 @@ void	export(char **builtin, t_envp *env)
 
 	v_name = builtin[0];
 	v_value = builtin[2];
-	if (v_value == NULL || v_name == NULL)
+	if (v_value == NULL)
+		v_value = "";
+	if (*v_name == '=' || v_name == NULL)
+	{
+		printf("export: not an identifier: %s\n", v_name);
+		g_exit_status = 1;
 		return ;
+	}
 	if (var_finder(env->envp, v_name) != -1)
 		ft_unset(v_name, env);
 	if (exporter(v_name, v_value, env) != 0)
+	{
+		g_exit_status = 1;
 		return ;
+	}
+	g_exit_status = 0;
 	return ;
 }

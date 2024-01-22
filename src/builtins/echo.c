@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   echo.c                                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ftemori <ftemori@student.42berlin.de>      +#+  +:+       +#+        */
+/*   By: ubuntu <ubuntu@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/15 12:08:59 by ftemori           #+#    #+#             */
-/*   Updated: 2024/01/15 12:09:01 by ftemori          ###   ########.fr       */
+/*   Updated: 2024/01/20 23:15:20 by ubuntu           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -51,11 +51,21 @@ void	our_echo(char **av)
 
 	c = 'y';
 	i = 1;
-	if (f_strcmp("-n", av[1]) == 0)
+	if (av[1] == NULL)
+		write(1, "\n", 1);
+	else if (f_strcmp("-n", av[1]) == 0)
 	{
 		i = 2;
 		c = 'n';
 	}
+	if (ft_strcmp("$?", av[1]) != 0 && f_strcmp("$?", av[1]) == 0)
+	{
+		printf("no matches found: 0?\n");
+		g_exit_status = 1;
+		return ;
+	}
+	else if (ft_strcmp("$?", av[1]) == 0)
+		printf("%i\n", g_exit_status);
 	while (av[i] != NULL)
 	{
 		f_putstr(av[i]);
@@ -65,5 +75,6 @@ void	our_echo(char **av)
 			write(1, "\n", 1);
 		i++;
 	}
+	g_exit_status = 0;
 	return ;
 }

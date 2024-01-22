@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ft_chopper1.c                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ftemori <ftemori@student.42berlin.de>      +#+  +:+       +#+        */
+/*   By: ubuntu <ubuntu@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/16 10:50:57 by ftemori           #+#    #+#             */
-/*   Updated: 2024/01/16 10:50:59 by ftemori          ###   ########.fr       */
+/*   Updated: 2024/01/20 23:35:15 by ubuntu           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -117,7 +117,7 @@ int	quo_order(char *tmp, t_data *data)
 	return (0);
 }
 
-int	ft_strcpy(t_data *data, char *tmp, int len, int k)
+int	f_strcpy(t_data *data, char *tmp, int len, int k)
 {
 	int	i;
 

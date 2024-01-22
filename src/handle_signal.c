@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   handle_signal.c                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: siun <siun@student.42.fr>                  +#+  +:+       +#+        */
+/*   By: ubuntu <ubuntu@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/23 13:23:06 by irivero-          #+#    #+#             */
-/*   Updated: 2023/12/13 16:18:40 by siun             ###   ########.fr       */
+/*   Updated: 2024/01/20 22:24:50 by ubuntu           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,14 +19,14 @@ void    handle_signal(int sign)
 	int	status;
 
 	pid = waitpid(-1, &status, WNOHANG);
-    if (sign == SIGINT)
-    {
+	if (sign == SIGINT)
+	{
 		if (pid == -1)
-        {
+        	{
 			ft_putstr_fd("\n", 1);
 			generate_prompt();
-			g_exit_status = 1;;
-    	}
+			g_exit_status = 1;
+    		}
 		else
 			ft_putstr_fd("\n", 1);
 	}

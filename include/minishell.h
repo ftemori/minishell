@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   minishell.h                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: siun <siun@student.42.fr>                  +#+  +:+       +#+        */
+/*   By: ubuntu <ubuntu@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/20 12:52:41 by irivero-          #+#    #+#             */
-/*   Updated: 2024/01/14 06:06:24 by siun             ###   ########.fr       */
+/*   Updated: 2024/01/21 12:39:21 by ubuntu           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -80,6 +80,7 @@ typedef struct s_stdio
 typedef struct s_envp
 {
 	char	**envp;
+	char	*cd_hist;
 }	t_envp;
 
 extern char	**g_envp;
@@ -91,7 +92,7 @@ extern int	g_exit_status;
 int		cd_to_home_directory(char *current_path, char **cmdline, char **envs);
 int		cd_to_env_variable(char *current_path, char **cmdline, char **envs);
 void	update_pwd_variables(char **envs);
-void	change_directory(char **paths);
+void	change_directory(char **paths, t_envp *env);
 
 //echo
 void	exit_status(void);
@@ -101,14 +102,13 @@ void	our_echo(char **av);
 int	f_strchr(char *s, char c);
 int	f_strcmp(char *s1, char *s2);
 
-
 //env
 void    ft_env(t_envp *args);
 int	f_strlen(char *s);
 
 //exit
 void    exit_err(void);
-void	exit_command(void);
+void	exit_command(char **av);
 //void    exit_command(t_cmd *cmd, char **cmdline);
 
 //export
@@ -119,7 +119,7 @@ int		update_or_add_export(char *str, char ***env);
 void    export(char **builtin, t_envp *env);
 
 //pwd
-void    our_pwd(char **av);
+char	*our_pwd(char **av, int pflag);
 
 //unset
 int 	is_valid_env_variable_name (char *str);
@@ -132,7 +132,7 @@ void	free_2d(char **arr);
 void	free_stdios(t_stdio *stdios);
 int		array_length_2d(char **array);
 char	**paths_array(char **envp);
-void	exec(char **cmd, char **env);
+void	exec(char **cmd, t_envp *env);
 int		*token_data(char **chopped_str);
 int		find_pipe(int *token, int *i);
 int		find_redirection(int *token, int *i);
@@ -155,12 +155,12 @@ int		ft_strcmp(char *s1, char *s2);
 //forks
 int		redirect_type(t_cmd *node);
 char	*command_path(char **path_array, int i, char *command);
-char	*path_pointer(char **envp, char *command);
-void	exec(char **cmd, char **env);
+char	*path_pointer(char **envp, t_envp *env);
+//void	exec(char **cmd, char **env);
 void	search_tree(t_cmd *node, char **envp, t_envp *env);
 void	pipe_stdins(int *pipefd, t_stdio *stdios);
 void	pipe_stdouts(int *pipefd, t_stdio *stdios);
-void	print_error_cmd(t_cmd *file_path, char **envp);
+int	print_error_cmd(t_cmd *file_path, t_envp *env);
 int		check_builtin(t_cmd *file_path);
 void	builtin_action(t_cmd *builtin, char **cmdline, t_envp *env);
 void	update_pipefd(int (*pipefd)[2], int pipe_exist, int old_pipe[2], int new_pipe[2]);
@@ -223,7 +223,7 @@ char	*str_modifier(char *str, char *var, int d);
 int	var_finder(char **env, char *s);
 
 // ft_chopper1.c
-int	ft_strcpy(t_data *data, char *tmp, int len, int k);
+int	f_strcpy(t_data *data, char *tmp, int len, int k);
 int	quo_order(char *tmp, t_data *data);
 int	quo_arrangement(char *str);
 char	*whileloop(char *sstr, char *str);

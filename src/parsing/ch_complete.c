@@ -3,31 +3,14 @@
 /*                                                        :::      ::::::::   */
 /*   ch_complete.c                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ftemori <ftemori@student.42berlin.de>      +#+  +:+       +#+        */
+/*   By: ubuntu <ubuntu@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/15 12:19:54 by ftemori           #+#    #+#             */
-/*   Updated: 2024/01/15 12:19:56 by ftemori          ###   ########.fr       */
+/*   Updated: 2024/01/20 21:46:47 by ubuntu           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../../include/minishell.h"
-
-/*int	word_counter(const char *str)
-{
-	int	count;
-	int	in_word;
-	int	in_quotes;
-
-	count = 0;
-	in_word = 0;
-	in_quotes = 0;
-	while (*str)
-	{
-		ft_word_itter(str, &in_quotes, &in_word, &count);
-		str++;
-	}
-	return (count);
-}*/
 
 int	var_finder(char **env, char *s)
 {
@@ -75,6 +58,8 @@ int	expansion(t_data *data, char **env)
 	int	v;
 
 	i = 0;
+	if (f_strcmp(data->array[0], "echo") == 0)
+		return (0);
 	while (data->array[i] != NULL)
 	{
 		d = f_strchr(data->array[i], '$');
@@ -98,15 +83,20 @@ char	**input_validation(char *tmp, char **env)
 	char	**arr;
 
 	data = malloc(sizeof(t_data));
-	//arr = (char**)malloc(sizeof(char*));
 	if (quo_num(tmp, data) == -1)
+	{
+		g_exit_status = 130;
 		return (NULL);
+	}
 	data->word_count = word_counter(tmp);
 	if (data->word_count == 0)
 		return (NULL);
 	if (data->sqn + data->dqn > 0)
 		if (quo_order(tmp, data) == -1)
+		{
+			g_exit_status = 130;
 			return (NULL);
+		}
 	data->array = (char **)malloc((data->word_count + 4) * sizeof(char *));
 	if (ft_chopper(data, tmp, 0) == -1)
 		return (NULL);

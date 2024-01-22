@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   recur_tree_execute.c                               :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: siun <siun@student.42.fr>                  +#+  +:+       +#+        */
+/*   By: ubuntu <ubuntu@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/30 20:53:44 by subpark           #+#    #+#             */
-/*   Updated: 2024/01/14 06:29:49 by siun             ###   ########.fr       */
+/*   Updated: 2024/01/21 20:41:54 by ubuntu           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,7 +23,7 @@ void	red_error_handle(t_cmd *type)
 		return ;
 }
 
-void	execute_simple_cmd(t_cmd *cmd, t_stdio **stdios, char **envp, t_envp *env)
+void	execute_simple_cmd(t_cmd *cmd, t_stdio **stdios, t_envp *env)
 {
 	static int		pipefd[2] = {-1, -1};
 	static int		new_pipe[2];
@@ -44,32 +44,25 @@ void	execute_simple_cmd(t_cmd *cmd, t_stdio **stdios, char **envp, t_envp *env)
 	{
 		update_redirfd(pipefd, *stdios);
 		update_pipefd(&pipefd, cmd->pipe_exist, old_pipe, new_pipe);
-		if (check_builtin(cmd->left_child))
-		{
-			builtin_action(cmd->right_child, cmd->right_child->cmdstr, env);
-			//if builtin action return 0 meanin successful, if that case, g_exit status become 0
-			//so have to modificate builtin action function to return int.
-			exit(errno);
-		}
-		else
+		if (check_builtin(cmd->left_child) == 0)
 		{
 			red_error_handle(cmd->left_child);
-	 		print_error_cmd(cmd->left_child, envp);
-			exec(cmd->right_child->cmdstr, envp);
+			int k = print_error_cmd(cmd->left_child, env);
+	 		if (k == 0)
+				exec(cmd->right_child->cmdstr, env);
 		}
+		exit(g_exit_status);
 	}
 	else
 	{
-		if (!ft_strcmp(cmd->right_child->cmdstr[0], "exit"))
-			exit_command();
-		else if (!ft_strcmp(cmd->right_child->cmdstr[0], "unset"))
-			ft_unset(cmd->right_child->cmdstr[1], env);
-		else if (!ft_strcmp(cmd->right_child->cmdstr[0], "export"))
-			export(cmd->right_child->cmdstr + 1, env);
-		else if (!ft_strcmp(cmd->right_child->cmdstr[0], "cd"))
-			change_directory(cmd->right_child->cmdstr);
+		waitpid(0, &g_exit_status, 0);
+		if (g_exit_status == 256)
+			g_exit_status = 127;
+		else if (g_exit_status == 512)
+			g_exit_status = 1;
+		if (check_builtin(cmd->left_child))
+			builtin_action(cmd->right_child, cmd->right_child->cmdstr, env);
 		write_pipefd(&pipefd, cmd->pipe_exist, old_pipe, new_pipe);
-		waitpid(-1, &g_exit_status, WNOHANG);
 		free_stdios(*stdios);
 		*stdios = NULL;
 	}
@@ -100,14 +93,14 @@ void	execute_simple_redirect(t_cmd *node, t_stdio **stdios)
 	}
 }
 
-void	execute_tree(t_cmd *node, t_stdio **stdios, char **envp, t_envp *envs)
+void	execute_tree(t_cmd *node, t_stdio **stdios, t_envp *envs)
 {
 	if (node->node_type == NODE_CMD || node->node_type == NODE_REDIRECTS)
 		return ;
 	else if (node->node_type == NODE_PIPE)
 		;
 	else if (node->node_type == NODE_SIMPLE_CMD)
-		execute_simple_cmd(node, stdios, envp, envs);
+		execute_simple_cmd(node, stdios, envs);
 	else if (node->node_type == NODE_SIMPLE_REDIRECT)
 		execute_simple_redirect(node, stdios);
 }
@@ -118,7 +111,7 @@ void	search_tree(t_cmd *node, char **envp, t_envp *env)
 
 	if (node == NULL)
 		return ;
-	execute_tree(node, &stdios, envp, env);
+	execute_tree(node, &stdios, env);
 	if (node->left_child && (node->left_child->node_type != NODE_RED_TYPE ||
 		node->left_child->node_type != NODE_FILE_PATH))
 		search_tree(node->left_child, envp, env);

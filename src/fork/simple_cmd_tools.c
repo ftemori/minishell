@@ -3,30 +3,34 @@
 /*                                                        :::      ::::::::   */
 /*   simple_cmd_tools.c                                 :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: siun <siun@student.42.fr>                  +#+  +:+       +#+        */
+/*   By: ubuntu <ubuntu@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/30 21:11:50 by subpark           #+#    #+#             */
-/*   Updated: 2023/12/12 21:21:00 by siun             ###   ########.fr       */
+/*   Updated: 2024/01/21 13:30:16 by ubuntu           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../../include/minishell.h"
 
-void	print_error_cmd(t_cmd *file_path, char **envp)
+int	print_error_cmd(t_cmd *file_path, t_envp *env)
 {
 	char	*path_buf;
 
-	path_buf = path_pointer(envp, file_path->cmdstr[0]);
+	path_buf = path_pointer(file_path->cmdstr, env);
 	if (!path_buf)
 	{
 		printf("%s: ", file_path->cmdstr[0]);
 		if (errno != 2)
 			perror("");
 		else
+		{
+			g_exit_status = 1;
 			printf("command not found\n");
+			return (-1);
+		}
 	}
 	free(path_buf);
-	return ;
+	return (0);
 }
 
 int	check_builtin(t_cmd *file_path)
@@ -45,7 +49,15 @@ void	builtin_action(t_cmd *builtin, char **cmdline, t_envp *env)
 	if (!ft_strcmp(builtin->cmdstr[0], "echo"))
 		our_echo(cmdline);
 	else if (!ft_strcmp(builtin->cmdstr[0], "pwd"))
-		our_pwd(builtin->cmdstr);
+		our_pwd(builtin->cmdstr, 1);
 	else if (!ft_strcmp(builtin->cmdstr[0], "env"))
 		ft_env(env);
+	else if (!ft_strcmp(builtin->cmdstr[0], "exit"))
+		exit_command(builtin->cmdstr);
+	else if (!ft_strcmp(builtin->cmdstr[0], "unset"))
+		ft_unset(builtin->cmdstr[1], env);
+	else if (!ft_strcmp(builtin->cmdstr[0], "export"))
+		export(builtin->cmdstr + 1, env);
+	else if (!ft_strcmp(builtin->cmdstr[0], "cd"))
+		change_directory(builtin->cmdstr, env);
 }

@@ -3,16 +3,54 @@
 /*                                                        :::      ::::::::   */
 /*   exit.c                                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ftemori <ftemori@student.42berlin.de>      +#+  +:+       +#+        */
+/*   By: ubuntu <ubuntu@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/15 12:11:28 by ftemori           #+#    #+#             */
-/*   Updated: 2024/01/15 12:11:30 by ftemori          ###   ########.fr       */
+/*   Updated: 2024/01/20 21:10:25 by ubuntu           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../../include/minishell.h"
 
-void	exit_command(void)
+int	av_counter(char **av)
 {
-	exit(g_exit_status);
+	int	i;
+
+	i = 0;
+	while (av[i])
+		i++;
+	return (i);
+}
+
+void	exit_command(char **av)
+{
+	int		i;
+
+	i = av_counter(av);
+	if (i > 2)
+	{
+		printf("exit: too many arguments\n");
+		g_exit_status = 1;
+	}
+	else if (i == 1)
+	{
+		g_exit_status = 0;
+		exit(g_exit_status);
+	}
+	else if (i == 2)
+	{
+		if (ft_isdigit(av[1][0]) == 0)
+		{
+			printf("exit: %s: numeric argument required\n", av[1]);
+			g_exit_status = 2;
+			exit(g_exit_status);
+		}
+		else
+		{
+			g_exit_status = ft_atoi(av[1]);
+			exit(g_exit_status);
+		}
+	}
+
+	//exit(g_exit_status);
 }

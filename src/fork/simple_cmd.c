@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   simple_cmd.c                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: siun <siun@student.42.fr>                  +#+  +:+       +#+        */
+/*   By: ubuntu <ubuntu@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/30 21:07:25 by subpark           #+#    #+#             */
-/*   Updated: 2024/01/14 06:25:44 by siun             ###   ########.fr       */
+/*   Updated: 2024/01/21 20:40:35 by ubuntu           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +14,7 @@
 
 void	write_pipefd(int (*pipefd)[2], int pipe_exist, int old_pipe[2], int new_pipe[2])
 {
+	close(new_pipe[1]);
 	if ((*pipefd)[0] == -1) //if there is no previous pipe
 		(*pipefd)[0] = 0;
 	else
@@ -30,7 +31,6 @@ void	write_pipefd(int (*pipefd)[2], int pipe_exist, int old_pipe[2], int new_pip
 	}
 	else
 		(*pipefd)[1] = new_pipe[1];
-	close(new_pipe[1]);
 }
 
 void	update_pipefd(int (*pipefd)[2], int pipe_exist, int old_pipe[2], int new_pipe[2])
@@ -41,7 +41,7 @@ void	update_pipefd(int (*pipefd)[2], int pipe_exist, int old_pipe[2], int new_pi
 	else
 	{
 		(*pipefd)[0] = dup2(old_pipe[0], 0);
-		close(old_pipe[1]);
+		close(old_pipe[1]);	// this should stay commented
 	}
 	if (pipe_exist == -1) //if there is no further pipe
 		close(new_pipe[1]);
