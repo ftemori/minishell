@@ -41,9 +41,6 @@ SRCS = src/builtins/unset.c\
  src/fork/wait_commands.c\
  src/handle_signal.c\
  src/parsing/ch_complete.c\
- src/parsing/ft_chopper1.c\
- src/parsing/ft_chopper2.c\
- src/parsing/ft_chopper3.c\
  src/parsing/get_a_command.c\
  src/parsing/lexical_analysis.c\
  src/parsing/syntax_analysis.c\
@@ -76,7 +73,7 @@ fclean: clean
 re: fclean all
 
 %.o: %.c include/minishell.h
-			$(CC) -g $(CCFLAGS) -c $< -o $@
+			$(CC) $(CCFLAGS) -c $< -o $@
 $(LIBFT):
 			make bonus -C $(LIBFT_DIR)
 			mv $(LIBFT_DIR)/$(LIBFT) .

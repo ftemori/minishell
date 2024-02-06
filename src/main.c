@@ -3,48 +3,38 @@
 /*                                                        :::      ::::::::   */
 /*   main.c                                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ubuntu <ubuntu@student.42.fr>              +#+  +:+       +#+        */
+/*   By: siun <siun@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/12/01 17:48:01 by subpark           #+#    #+#             */
-/*   Updated: 2024/01/21 20:24:45 by ubuntu           ###   ########.fr       */
+/*   Updated: 2024/02/02 17:45:25 by siun             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../include/minishell.h"
 
-char	*print_prompt(void)
+void	print_prompt(void)
 {
-	char	*cwd;
-	int	i;
+	char	cwd[1024];
 
-	cwd = malloc(1024);
-	getcwd(cwd, 1024);
-	i = f_strlen(cwd);
-	cwd[i] = ' ';
-	cwd[i + 1] = '\0';
-	//printf("%s", cwd);
-	return (cwd);
+	getcwd(cwd, sizeof(cwd));
+	printf("%s", cwd);
 }
 
 void	interactive_mode(t_cmd **tree, char **envp, t_envp *env)
 {
 	char	*tmp;
-	char	*cwd;
 
 	while (1)
 	{
-		set_signals_interactive();
-		cwd = print_prompt();
-		tmp = readline(cwd);
-		free(cwd);
+		set_signals_interactive(-1);
+		print_prompt();
+		tmp = readline(" ");
 		add_history(tmp);
 		if (!tmp)
-		{
-			free(tmp);
 			exit(0);//have to add some exiting things
-		}
 		*tree = extract_command(tmp, env);
 		search_tree(*tree, envp, env);
+		printf("exit status %d\n", g_exit_status);
 		write(1,"\0",1);
 		wait_each_commands(*tree);
 		free_tree(*tree);
@@ -78,7 +68,6 @@ int main(int argc, char **argv, char **envs)
 	char	**envp;
 
 	env.envp = envs;
-	env.cd_hist = NULL;
 	(void)argc;
 	envp = paths_array(envs);
 	if (argc == 2)
@@ -88,8 +77,8 @@ int main(int argc, char **argv, char **envs)
 	free_2d(envp);
 	//exit_shell();
 }
-
-/*int main(int argc, char **argv, char **envs)
+/*
+int main(int argc, char **argv, char **envs)
 {
 //	char	**line;
 	int		index, i;

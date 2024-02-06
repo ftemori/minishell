@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   minishell.h                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ubuntu <ubuntu@student.42.fr>              +#+  +:+       +#+        */
+/*   By: siun <siun@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/20 12:52:41 by irivero-          #+#    #+#             */
-/*   Updated: 2024/01/21 12:39:21 by ubuntu           ###   ########.fr       */
+/*   Updated: 2024/02/04 00:25:23 by siun             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -52,14 +52,6 @@
 
 # include "../libft/libft.h"
 
-typedef struct s_data
-{
-	int		word_count;
-	int		sqn;
-	int		dqn;
-	char	**array;
-}	t_data;
-
 typedef struct s_cmd
 {
 	struct s_cmd	*left_child;
@@ -88,11 +80,14 @@ extern int	g_exit_status;
 
 //builtins
 
+//path_finder.c
+int     var_finder(char **env, char *s);
+
 //cd
 int		cd_to_home_directory(char *current_path, char **cmdline, char **envs);
 int		cd_to_env_variable(char *current_path, char **cmdline, char **envs);
 void	update_pwd_variables(char **envs);
-void	change_directory(char **paths, t_envp *env);
+void    change_directory(char **paths, t_envp *env);
 
 //echo
 void	exit_status(void);
@@ -102,13 +97,14 @@ void	our_echo(char **av);
 int	f_strchr(char *s, char c);
 int	f_strcmp(char *s1, char *s2);
 
+
 //env
 void    ft_env(t_envp *args);
 int	f_strlen(char *s);
 
 //exit
 void    exit_err(void);
-void	exit_command(char **av);
+void    exit_command(char **av);
 //void    exit_command(t_cmd *cmd, char **cmdline);
 
 //export
@@ -119,20 +115,20 @@ int		update_or_add_export(char *str, char ***env);
 void    export(char **builtin, t_envp *env);
 
 //pwd
-char	*our_pwd(char **av, int pflag);
+char    *our_pwd(char **av, int pflag);
 
 //unset
 int 	is_valid_env_variable_name (char *str);
 int		check_env_variable(char *key, char *env);
 int 	unset_enviroment_variable(char *key, char ***env);
-void	ft_unset(char *cmdline, t_envp *env);
+void    ft_unset(char *v_name, t_envp *env);
 
 //tools
 void	free_2d(char **arr);
 void	free_stdios(t_stdio *stdios);
 int		array_length_2d(char **array);
 char	**paths_array(char **envp);
-void	exec(char **cmd, t_envp *env);
+void	exec(char **cmd, char **env);
 int		*token_data(char **chopped_str);
 int		find_pipe(int *token, int *i);
 int		find_redirection(int *token, int *i);
@@ -148,19 +144,19 @@ char	**text_array_part_cpy(char **line, int start, int end);
 int		how_many_token_id(int *token, int token_identifier);
 int		token_length(int *token);
 void	free_tree(t_cmd	*tree);
-void	write_every_array(char **array);
+void	write_every_array(int filefd, char **array);
 
 int		ft_strcmp(char *s1, char *s2);
 
 //forks
 int		redirect_type(t_cmd *node);
 char	*command_path(char **path_array, int i, char *command);
-char	*path_pointer(char **envp, t_envp *env);
-//void	exec(char **cmd, char **env);
+char	*path_pointer(char **envp, char *command);
+void	exec(char **cmd, char **env);
 void	search_tree(t_cmd *node, char **envp, t_envp *env);
 void	pipe_stdins(int *pipefd, t_stdio *stdios);
 void	pipe_stdouts(int *pipefd, t_stdio *stdios);
-int	print_error_cmd(t_cmd *file_path, t_envp *env);
+void	print_error_cmd(t_cmd *file_path, char **envp);
 int		check_builtin(t_cmd *file_path);
 void	builtin_action(t_cmd *builtin, char **cmdline, t_envp *env);
 void	update_pipefd(int (*pipefd)[2], int pipe_exist, int old_pipe[2], int new_pipe[2]);
@@ -204,7 +200,7 @@ void	print_id_error(char *token, char *message);
 int		remove_char(char *str, char c);
 int		double_char_len(char **str);
 int		is_stringdigit(char *str);
-int		is_whitespace(char *c);
+int     is_whitespace(char *c);
 
 int		find_pipe(int *token, int *i);
 int		find_redirection(int *token, int *i);
@@ -212,35 +208,14 @@ int		find_next_redirection(int *token, int *i);
 
 
 // handle_signal.c
-void	set_signals_interactive(void);
+//void	set_signals_interactive(void);
 //void	set_signals_noninteractive(void);
-char	*print_prompt(void);
+void	signal_reset_prompt(int signal);
+void	set_signals_interactive(pid_t pid);
+void	print_prompt();
+void	signal_parent_handle(void);
 
 // ch_complete.c (FERDAWS)
 char	**input_validation(char *tmp, char **env);
-int	expansion(t_data *data, char **env);
-char	*str_modifier(char *str, char *var, int d);
-int	var_finder(char **env, char *s);
-
-// ft_chopper1.c
-int	f_strcpy(t_data *data, char *tmp, int len, int k);
-int	quo_order(char *tmp, t_data *data);
-int	quo_arrangement(char *str);
-char	*whileloop(char *sstr, char *str);
-int	quo_num(char *tmp, t_data *data);
-
-// ft_chopper2.c
-int	ft_chopper(t_data *data, char *tmp, int k);
-char	*if_cases(char *tmp, int *i, t_data *data, int k);
-char	*elsehelper(t_data *data, char *tmp, int i, int k);
-char	*ifhelper(t_data *data, char *tmp, int i, int k);
-int	is_special_char(char *c);
-
-// ft_chopper3.c
-int	word_counter(char *str);
-int	is_word_start(char *c, int in_quotes, int in_word);
-int	is_quote(char c);
-
-
 
 #endif
