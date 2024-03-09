@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   chopping_str_tool.c                                :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: subpark <subpark@student.42.fr>            +#+  +:+       +#+        */
+/*   By: siun <siun@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/27 15:02:21 by subpark           #+#    #+#             */
-/*   Updated: 2023/12/07 17:06:18 by subpark          ###   ########.fr       */
+/*   Updated: 2024/02/08 17:29:15 by siun             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,24 +17,16 @@ void	find_rellocator(char *str, int *i, int *count)
 	if (str[*i] == '<')
 	{
 		if (str[(*i) + 1] == '<')
-			(*i) ++;
-		(*count) ++;
+			(*i)++;
+		(*count)++;
 	}
 	else if (str[*i] == '>')
 	{
 		if (str[(*i) + 1] == '>')
-			(*i) ++;
-		(*count) ++;
+			(*i)++;
+		(*count)++;
 	}
 }
-
-/*void	find_spaces(char *str, int *i, int *count)
-{
-	if (str[*i] == ' ')
-	while (str[*i] == ' ')
-		(*i) ++;
-	(*count) ++;
-}*/
 
 char	*strdup_rellocator(char *str, int *i)
 {
@@ -71,7 +63,7 @@ char	*strdup_word(char *str, int *i)
 	while ((*i) < word_length + start)
 	{
 		word[(*i) - start] = str[(*i)];
-		(*i) ++;
+		(*i)++;
 	}
 	word[word_length] = 0;
 	return (word);

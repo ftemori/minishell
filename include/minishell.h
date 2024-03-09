@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   minishell.h                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: siun <siun@student.42.fr>                  +#+  +:+       +#+        */
+/*   By: subpark <subpark@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/20 12:52:41 by irivero-          #+#    #+#             */
-/*   Updated: 2024/02/04 00:25:23 by siun             ###   ########.fr       */
+/*   Updated: 2024/02/12 15:11:42 by subpark          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -54,8 +54,8 @@
 
 typedef struct s_cmd
 {
-	struct s_cmd	*left_child;
-	struct s_cmd	*right_child;
+	struct s_cmd		*left_child;
+	struct s_cmd		*right_child;
 	char				**cmdstr;
 	int					node_type;
 	int					pipe_exist;
@@ -75,60 +75,49 @@ typedef struct s_envp
 	char	*cd_hist;
 }	t_envp;
 
-extern char	**g_envp;
+typedef struct s_data
+{
+	int		word_count;
+	int		sqn;
+	int		dqn;
+	char	**array;
+	char	*tmp;
+}	t_data;
+
 extern int	g_exit_status;
 
 //builtins
 
-//path_finder.c
-int     var_finder(char **env, char *s);
-
 //cd
-int		cd_to_home_directory(char *current_path, char **cmdline, char **envs);
-int		cd_to_env_variable(char *current_path, char **cmdline, char **envs);
-void	update_pwd_variables(char **envs);
-void    change_directory(char **paths, t_envp *env);
+void	change_directory(char **paths, t_envp *env);
 
 //echo
-void	exit_status(void);
-void	echo_env_variable(char **cmdline, char **envs, int i);
-int		is_option_n(char *token);
 void	our_echo(char **av);
-int	f_strchr(char *s, char c);
-int	f_strcmp(char *s1, char *s2);
-
+int		f_strchr(char *s, char c);
+int		f_strcmp(char *s1, char *s2);
 
 //env
-void    ft_env(t_envp *args);
-int	f_strlen(char *s);
+void	ft_env(t_envp *args);
+int		f_strlen(char *s);
 
 //exit
-void    exit_err(void);
-void    exit_command(char **av);
-//void    exit_command(t_cmd *cmd, char **cmdline);
+void	exit_command(char **av);
 
 //export
-void    print_export(char **env);
-int     is_valid_export_key(char *key);
-void	add_export_variable(char *str, char **new, int i);
-int		update_or_add_export(char *str, char ***env);
-void    export(char **builtin, t_envp *env);
+void	export(char **builtin, t_envp *env);
 
 //pwd
-char    *our_pwd(char **av, int pflag);
+char	*our_pwd(char **av, int pflag);
 
 //unset
-int 	is_valid_env_variable_name (char *str);
-int		check_env_variable(char *key, char *env);
-int 	unset_enviroment_variable(char *key, char ***env);
-void    ft_unset(char *v_name, t_envp *env);
+void	ft_unset(char *v_name, t_envp *env);
 
 //tools
 void	free_2d(char **arr);
 void	free_stdios(t_stdio *stdios);
 int		array_length_2d(char **array);
 char	**paths_array(char **envp);
-void	exec(char **cmd, char **env);
+void	exec(char **cmd, char **env, t_envp *envo);
 int		*token_data(char **chopped_str);
 int		find_pipe(int *token, int *i);
 int		find_redirection(int *token, int *i);
@@ -152,21 +141,22 @@ int		ft_strcmp(char *s1, char *s2);
 int		redirect_type(t_cmd *node);
 char	*command_path(char **path_array, int i, char *command);
 char	*path_pointer(char **envp, char *command);
-void	exec(char **cmd, char **env);
 void	search_tree(t_cmd *node, char **envp, t_envp *env);
-void	pipe_stdins(int *pipefd, t_stdio *stdios);
-void	pipe_stdouts(int *pipefd, t_stdio *stdios);
 void	print_error_cmd(t_cmd *file_path, char **envp);
 int		check_builtin(t_cmd *file_path);
 void	builtin_action(t_cmd *builtin, char **cmdline, t_envp *env);
-void	update_pipefd(int (*pipefd)[2], int pipe_exist, int old_pipe[2], int new_pipe[2]);
-void	update_redirfd(int *pipefd, t_stdio *stdios);
+void	update_pipefd(int pipefd[2], int old_input, int pipe_exist);
+void	update_redirfd(t_stdio *stdios);
 t_stdio	*find_last_in(t_stdio *stdios);
 t_stdio	*find_last_out(t_stdio *stdios);
-void	connect_last_out(int pipe_out, t_stdio *last_out);
-void	connect_last_in(int pipe_in, t_stdio *last_in);
-void	write_pipefd(int (*pipefd)[2], int pipe_exist, int old_pipe[2], int new_pipe[2]);
+void	connect_last_out(t_stdio *last_out);
+void	connect_last_in(t_stdio *last_in);
+void	write_pipefd(int pipefd[2], int *old_input, int pipe_exist);
 void	wait_each_commands(t_cmd *tree);
+void	pid_zero_exec(t_cmd *cmd, char **envp, t_envp *env);
+void	pid_pid_builtin_n_set(t_cmd *cmd, t_envp *env);
+void	pid_pid_waiting(t_stdio **stdios);
+int		red_error_handle(t_cmd *type, pid_t pid);
 
 //parsing
 char	**chopping_str(char *str);
@@ -176,46 +166,50 @@ int		syntax_pipe(char **cmd_line, int *token, int *i, t_cmd **node);
 int		syntax_cmds(char **cmd_line, int *token, int *i, t_cmd **node);
 int		syntax_simple_cmd(char **cmd_line, int *token, int *i, t_cmd **node);
 int		syntax_redirects(char **cmd_line, int *token, int *i, t_cmd **node);
-int		syntax_simple_redirect(char **cmd_line, /*int *token,*/ int *i, t_cmd **node);
+int		syntax_simple_redirect(char **cmd_line, int *i, t_cmd **node);
 t_cmd	*generate_tree_node(int node_type, int pipe_e);
 t_cmd	*generate_end_node(char **line, int node_type, int start, int end);
-void	replace_exit_status(char ***argv);
+void	replace_exit_status(char ***argv, int i, int flag, int j);
+void	syntax_pipe_error_print(void);
+void	syntax_pipe_i_update(int *i, int pipe_index, int tmp);
 
 // get_envpath.c
 char	**paths_array(char **envp);
-
-// generate_prompt.c
-void	generate_prompt(void);
-int		read_from_stdin(char **buf);
-void	get_line(char **line);
-
-// utils.c
-char	*ft_strnew(size_t size);
-char	*get_env_value(char *key, char **envs);
-int 	print_error(char *token, char *message);
-int 	print_error2(char *token, char *token2, char *message);
-void	print_id_error(char *token, char *message);
-
-//utils2.c
-int		remove_char(char *str, char c);
-int		double_char_len(char **str);
-int		is_stringdigit(char *str);
-int     is_whitespace(char *c);
 
 int		find_pipe(int *token, int *i);
 int		find_redirection(int *token, int *i);
 int		find_next_redirection(int *token, int *i);
 
-
-// handle_signal.c
-//void	set_signals_interactive(void);
-//void	set_signals_noninteractive(void);
 void	signal_reset_prompt(int signal);
 void	set_signals_interactive(pid_t pid);
-void	print_prompt();
+char	*print_prompt(void);
 void	signal_parent_handle(void);
 
-// ch_complete.c (FERDAWS)
+// ch_complete.c
+int		if_tmp_null(t_data *data, char *tmp, int i, int k);
+int		ft_chopper(t_data *data, char *tmp, int k);
+void	else_if_str(int *inquotes, int *count, int *inword);
+int		word_counter(const char *str, int count, int inword, int inquotes);
 char	**input_validation(char *tmp, char **env);
+
+// ch_com_expan
+int		expansion(t_data *data, char **env, int i);
+void	single_quote_case(t_data *data, int i);
+char	*str_quo_modifier(char *str);
+int		var_finder(char **env, char *s);
+char	*str_modifier(char *str, char *var, int d);
+
+// ch_complete2.c
+int		quo_num(char *tmp, t_data *data);
+int		if_sstr_zero(char *sstr);
+int		quo_arrangement(char *str, int i);
+int		quo_order(char *tmp, t_data *data, int i, int k);
+int		ft_strcpy(t_data *data, char *tmp, int len, int k);
+
+// ch_complete3.c
+char	*ifhelper(t_data *data, char *tmp, int i, int k);
+char	*elsehelper(t_data *data, char *tmp, int i, int k);
+void	while_function(char *tmp, int *i);
+char	*status_ret(void);
 
 #endif

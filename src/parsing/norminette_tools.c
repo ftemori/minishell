@@ -1,26 +1,26 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   path_finder.c                                      :+:      :+:    :+:   */
+/*   norminette_tools.c                                 :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ftemori <ftemori@student.42berlin.de>      +#+  +:+       +#+        */
+/*   By: subpark <subpark@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/02/06 18:31:45 by ftemori           #+#    #+#             */
-/*   Updated: 2024/02/06 18:31:48 by ftemori          ###   ########.fr       */
+/*   Created: 2024/02/12 15:06:54 by subpark           #+#    #+#             */
+/*   Updated: 2024/02/12 15:11:07 by subpark          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../../include/minishell.h"
 
-int     var_finder(char **env, char *s)
+void	syntax_pipe_error_print(void)
 {
-        int     i;
-        i = 0;
-        while (env[i] != NULL)
-        {
-                if (f_strcmp(env[i], s) != -1)
-                        return (i);
-                i++;
-        }
-        return (-1);
+	write(2, "syntax error near unexpected token '|'\n",
+		ft_strlen("syntax error near unexpected token '|'\n"));
+	g_exit_status = 1;
+}
+
+void	syntax_pipe_i_update(int *i, int pipe_index, int tmp)
+{
+	i[0] = pipe_index + 1;
+	i[1] = tmp;
 }

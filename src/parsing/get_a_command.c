@@ -3,16 +3,22 @@
 /*                                                        :::      ::::::::   */
 /*   get_a_command.c                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: siun <siun@student.42.fr>                  +#+  +:+       +#+        */
+/*   By: subpark <subpark@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/22 19:12:24 by subpark           #+#    #+#             */
-/*   Updated: 2024/01/14 06:05:43 by siun             ###   ########.fr       */
+/*   Updated: 2024/02/12 15:01:27 by subpark          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 //redirector, pipe, will be in other lexicon
 
 #include "../../include/minishell.h"
+
+void	freeing_norminette(char **chopped_str, int *token)
+{
+	free_2d(chopped_str);
+	free(token);
+}
 
 t_cmd	*extract_command(char *str, t_envp *env)
 {
@@ -26,22 +32,19 @@ t_cmd	*extract_command(char *str, t_envp *env)
 		return (NULL);
 	cmd_tree = NULL;
 	chopped_str = input_validation(str, env->envp);
-	replace_exit_status(&chopped_str);
+	replace_exit_status(&chopped_str, 0, 0, 0);
 	if (!chopped_str)
 		return (NULL);
 	token = token_data(chopped_str);
 	if (!token)
 		return (NULL);
-	//function that parsing token & generate cmd linked list
 	i[0] = 0;
 	i[1] = token_length(token);
 	tmp = syntax_pipe(chopped_str, token, i, &cmd_tree);
 	if (tmp == -1)
-	{
 		free_tree(cmd_tree);
-		return(NULL);
-	}
-	free_2d(chopped_str);
-	free(token);
+	if (tmp == -1)
+		return (NULL);
+	freeing_norminette(chopped_str, token);
 	return (cmd_tree);
 }

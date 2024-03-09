@@ -3,10 +3,10 @@
 #                                                         :::      ::::::::    #
 #    Makefile                                           :+:      :+:    :+:    #
 #                                                     +:+ +:+         +:+      #
-#    By: siun <siun@student.42.fr>                  +#+  +:+       +#+         #
+#    By: subpark <subpark@student.42.fr>            +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/12/21 16:59:02 by subpark           #+#    #+#              #
-#    Updated: 2024/01/14 06:08:17 by siun             ###   ########.fr        #
+#    Updated: 2024/02/12 15:11:25 by subpark          ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -18,10 +18,6 @@ LIBFT_PATH	= $(LIBFT_DIR)/$(LIBFT)
 
 CCFLAGS = -Wall -Werror -Wextra
 LDFLAGS = -L/usr/lib/x86_64-linux-gnu -lreadline
-
-GREEN = \033[0;32m
-BLUE = \033[0;34m
-RESET = \033[0m
 
 CC = cc -g
 
@@ -38,14 +34,18 @@ SRCS = src/builtins/unset.c\
  src/fork/simple_cmd_stdins.c\
  src/fork/simple_cmd_stdouts.c\
  src/fork/simple_cmd_tools.c\
+ src/fork/simple_cmd_pid.c\
  src/fork/wait_commands.c\
- src/handle_signal.c\
  src/parsing/ch_complete.c\
+ src/parsing/ch_com_expan.c\
+ src/parsing/ch_complete2.c\
+ src/parsing/ch_complete3.c\
  src/parsing/get_a_command.c\
  src/parsing/lexical_analysis.c\
  src/parsing/syntax_analysis.c\
  src/parsing/tree_node_gen.c\
  src/parsing/argv_modification.c\
+ src/parsing/norminette_tools.c\
  src/tools/free_tools.c\
  src/tools/ft_strcmp.c\
  src/tools/get_envpath.c\
@@ -54,10 +54,7 @@ SRCS = src/builtins/unset.c\
  src/tools/chopping_str_tool.c\
  src/tools/chopping_word_tools.c\
  src/tools/copy_2d_arr.c\
- src/generate_prompt.c\
  src/main.c\
- src/utils.c\
- src/utils2.c\
  src/signals/signal.c
 
 OBJS = $(SRCS:.c=.o)

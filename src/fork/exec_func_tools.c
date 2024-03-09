@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   exec_func_tools.c                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: siun <siun@student.42.fr>                  +#+  +:+       +#+        */
+/*   By: subpark <subpark@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/22 18:05:19 by subpark           #+#    #+#             */
-/*   Updated: 2024/02/02 18:39:31 by siun             ###   ########.fr       */
+/*   Updated: 2024/02/12 13:07:18 by subpark          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,14 +43,18 @@ char	*path_pointer(char **envp, char *command)
 	return (NULL);
 }
 
-void	exec(char **cmd, char **env)
+void	exec(char **cmd, char **env, t_envp *envo)
 {
 	char	*path;
 	int		g_exit_status;
 
 	if (!cmd || !cmd[0])
 		exit(0);
-	path = path_pointer(env, cmd[0]);
+	path = NULL;
+	if (access(cmd[0], X_OK) == 0)
+		path = cmd[0];
+	else if (var_finder(envo->envp, "PATH") != -1)
+		path = path_pointer(env, cmd[0]);
 	if (!path)
 		exit(2);
 	g_exit_status = execve(path, cmd, env);

@@ -3,188 +3,96 @@
 /*                                                        :::      ::::::::   */
 /*   cd.c                                               :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: irivero- <irivero-@student.42.fr>          +#+  +:+       +#+        */
+/*   By: subpark <subpark@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2023/11/27 15:59:52 by irivero-          #+#    #+#             */
-/*   Updated: 2023/12/05 09:24:45 by irivero-         ###   ########.fr       */
+/*   Created: 2024/02/09 02:17:15 by ubuntu            #+#    #+#             */
+/*   Updated: 2024/02/12 16:22:32 by subpark          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../../include/minishell.h"
 
-//changes the current working directory to the user's home directory
-/* int	cd_to_home_directory(char *current_path, char **cmdline, char **envs)
+char	*path_finder(char **env)
 {
-	//check if the argument is "~", print an error and set the exit status
-	if (cmdline[1][1] == '~')
+	int	i;
+
+	i = 0;
+	while (env[i] != NULL)
 	{
-		print_error2("cd", cmdline[1], "No such file or directory");
-		g_exit_status = 1;
+		if (f_strcmp("HOME=", env[i]) == 0)
+			break ;
+		i++;
 	}
-	//get the value of the HOME variable
-	current_path = get_env_value("HOME", envs);
-	//change the current working directory to the value of the HOME variable
-	if (chdir(current_path) == -1)
-		print_error("cd", "HOME not set");
-	return (1);
+	return (env[i]);
 }
 
-//changes the current working directory to the value of the environment variable
-int	cd_to_env_variable(char *current_path, char **cmdline, char **envs)
+char	*path_to_usr(char *path)
 {
-	//extract the enviroment variable name from the argument
-	current_path = get_env_value(&(cmdline[1][1]), envs);
-	//change the current working directory to the value of the environment variable
-	//fallback to HOME directory if failed
-	if (chdir(current_path) == -1)
-		chdir(get_env_value("HOME", envs));
-	return (1);
+	int	i;
+
+	i = 0;
+	while (path[i] != '/')
+		i++;
+	return (path + i);
 }
 
-//updates the PWD and OLDPWD variables after successful cd
-void	update_pwd_variables(char **envs)
+char	*path_filler(char **paths, t_envp *env, char *path)
 {
-	char	*current_pwd;
-	char	*old_pwd;
-	char	*temporary_buffer;
+	char	*tmp;
 
-	//allocate memory for the temporary buffer
-	temporary_buffer = malloc(sizeof(char) * 1024);
-	//create strings with the new PWD and OLDPWD values
-	current_pwd = ft_strjoin("PWD=", getcwd(temporary_buffer, 1024));
-	old_pwd = ft_strjoin("OLDPWD=", get_env_value("PWD", envs));
-	//update the environment variables
-	update_or_add_export(current_pwd, &envs);
-	update_or_add_export(old_pwd, &envs);
-	free(current_pwd);
-	free(old_pwd);
-}
-
-//main function for the cd builtin, handles different cases
-void	change_directory(char **cmdline, char **envs)
-{
-	char	*current_path;
-	int		result;
-
-	current_path = 0;
-	result = 0;
-	//case when a specific path is provided
-	if (cmdline[1] != NULL && cmdline[1][0] != '~' && cmdline[1][0] != '$')
+	path = path_finder(env->envp);
+	path = path_to_usr(path);
+	if (paths[1] && paths[1][0] == '~')
 	{
-		current_path = cmdline[1];
-		//change the current working directory to the specified path, print an error if failed
-		if (chdir(current_path) == -1)
-			result = print_error2("cd", current_path, strerror(errno));
-		update_pwd_variables(envs);
+		tmp = malloc(f_strlen(path) + f_strlen(paths[1]) + 1);
+		ft_strlcpy(tmp, path, f_strlen(path) + 1);
+		ft_strlcat(tmp, paths[1] + 1, f_strlen(tmp) + f_strlen(paths[1]) + 1);
+		path = tmp;
 	}
-	//case no path is provided or the path is "~"
-	else if (cmdline[1] == NULL && cmdline[1][0] == '-')
-		cd_to_home_directory(current_path, cmdline, envs);
-	//case the path is "$"
-	else if (cmdline[1][0] == '$')
-		cd_to_env_variable(current_path, cmdline, envs);
-	//update the exit status based on the success or failure of the cd command
-	if (result == -1)
+	return (path);
+}
+
+char	*f_strlcpy(char *src)
+{
+	int		j;
+	char	*tmp;
+
+	if (!src)
+		return (NULL);
+	tmp = malloc(f_strlen(src) + 1);
+	j = 0;
+	while (src && src[j])
+	{
+		tmp[j] = src[j];
+		j++;
+	}
+	tmp[j] = '\0';
+	free(src);
+	return (tmp);
+}
+
+void	change_directory(char **paths, t_envp *env)
+{
+	char	*path;
+	char	*ptr[2];
+
+	ptr[0] = "1";
+	ptr[1] = NULL;
+	path = NULL;
+	if (env->cd_hist != NULL && (paths[1] && \
+	ft_strcmp(paths[1], "-") == 0) && paths[2] == NULL)
+		path = env->cd_hist;
+	else if (paths[1])
+		path = paths[1];
+	if (!env->cd_hist)
+		env->cd_hist = f_strlcpy(our_pwd(ptr, 0));
+	if (!path || f_strcmp(path, "~") == 0)
+		path = path_filler(paths, env, path);
+	if (chdir(path) == -1)
+	{
 		g_exit_status = 1;
-	else
-		g_exit_status = 0;
-}
- */
-
-/* void	change_directory(char **paths)
-{
-	char	*path = paths[1];
-
-	if (!path)
-		path = getenv("HOME");
-        if (chdir(path) == -1)
-        {
-        	printf("cd: no such file or directory: %s", path);
-        	return ;
-        }
-} */
-
-char    *path_finder(char **env)
-{
-        int     i;
-
-        i = 0;
-        while (env[i] != NULL)
-        {
-                if (f_strcmp("HOME=", env[i]) == 0)
-                        break ;
-                i++;
-        }
-        return (env[i]);
-}
-
-char    *path_to_usr(char *path)
-{
-        int     i;
-
-        i = 0;
-        while (path[i] != '/')
-                i++;
-        return (path + i);
-}
-
-char    *path_filler(char **paths, t_envp *env, char *path)
-{
-        char    *tmp;
-
-        path = path_finder(env->envp);
-        path = path_to_usr(path);
-        if (paths[1] && paths[1][0] == '~')
-        {
-                tmp = malloc(f_strlen(path) + f_strlen(paths[1]) + 1);
-                ft_strlcpy(tmp, path, f_strlen(path) + 1);
-                ft_strlcat(tmp, paths[1] + 1, f_strlen(tmp) + f_strlen(paths[1]) + 1);
-                path = tmp;
-        }
-        return (path);
-}
-
-char    *f_strlcpy(char *src)
-{
-        int             j;
-        char    *tmp;
-
-        if (!src)
-                return (NULL);
-        tmp = malloc(f_strlen(src) + 1);
-        j = 0;
-        while (src && src[j])
-        {
-                tmp[j] = src[j];
-                j++;
-        }
-        tmp[j] = '\0';
-        free(src);
-        return (tmp);
-}
-
-void    change_directory(char **paths, t_envp *env)
-{
-        char    *path;
-        char    *ptr[2];
-
-        ptr[0] = "1";
-        ptr[1] = NULL;
-        path = NULL;
-        if (env->cd_hist != NULL && (paths[1] && \
-        ft_strcmp(paths[1], "-") == 0) && paths[2] == NULL)
-                path = env->cd_hist;
-        else if (paths[1])
-                path = paths[1];
-        if (!env->cd_hist)
-                env->cd_hist = f_strlcpy(our_pwd(ptr, 0));
-        if (!path || f_strcmp(path, "~") == 0)
-                path = path_filler(paths, env, path);
-        if (chdir(path) == -1)
-        {
-                g_exit_status = 1;
-                printf("cd: no such file or directory: %s\n", path);
-                return ;
-        }
-        g_exit_status = 0;
+		printf("cd: no such file or directory: %s\n", path);
+		return ;
+	}
+	g_exit_status = 0;
 }
